@@ -1,8 +1,17 @@
+
 export interface User {
   id: string;
   email: string;
   name: string;
   createdAt: string;
+}
+
+export interface SocialLinks {
+  linkedin?: string;
+  github?: string;
+  twitter?: string;
+  instagram?: string;
+  reddit?: string;
 }
 
 export interface Company {
@@ -14,6 +23,7 @@ export interface Company {
   primaryColor: string;
   accentColor: string;
   cultureVideoUrl?: string;
+  socialLinks?: SocialLinks;
   sections: Section[];
   status: 'draft' | 'published';
   jobCount: number;
