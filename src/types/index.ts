@@ -1,4 +1,11 @@
 
+// Re-export Supabase types for database entities (with DB prefix to avoid conflicts)
+export type {
+  Section as DBSection,
+  Company as DBCompany,
+  Job as DBJob,
+} from '../lib/supabase';
+
 export interface User {
   id: string;
   email: string;
@@ -34,12 +41,15 @@ export interface Company {
 
 export interface Section {
   id: string;
-  type: 'hero' | 'about' | 'culture' | 'perks' | 'custom';
+  type: 'hero' | 'about' | 'culture' | 'values' | 'perks' | 'custom';
   visible: boolean;
   order: number;
   data: {
-    title: string;
-    content: string;
+    title?: string;
+    subtitle?: string;
+    content?: string;
+    items?: string[];
+    [key: string]: any;
   };
 }
 
@@ -52,6 +62,13 @@ export interface Job {
   location: string;
   jobType: 'full-time' | 'part-time' | 'contract' | 'internship';
   status: 'open' | 'closed';
+  // Extended fields from CSV import
+  workPolicy?: 'Remote' | 'Hybrid' | 'On-site' | string;
+  department?: string;
+  employmentType?: string;
+  experienceLevel?: string;
+  salaryRange?: string;
+  postedDaysAgo?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,10 +78,12 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  initialized: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
-  checkAuth: () => void;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+  initialize: () => Promise<void>;
 }
 
 export interface CompanyState {

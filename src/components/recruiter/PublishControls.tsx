@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Company } from '@/types';
 import { useCompanyStore } from '@/store/companyStore';
 import { Button } from '@/components/ui/button';
@@ -90,12 +89,16 @@ export const PublishControls = ({ company }: PublishControlsProps) => {
       {/* Preview */}
       <div className="space-y-2">
         <Label>Preview</Label>
-        <Link to={`/${company.slug}/careers`} target="_blank">
+        <a 
+          href={`/${company.slug}/careers`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
           <Button variant="outline" className="w-full gap-2">
             <ExternalLink className="h-4 w-4" />
             Open Preview in New Tab
           </Button>
-        </Link>
+        </a>
       </div>
 
       {/* Publish / Unpublish */}
@@ -176,6 +179,19 @@ export const PublishControls = ({ company }: PublishControlsProps) => {
               <Copy className="h-4 w-4" />
             )}
           </Button>
+          <a 
+            href={publicUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </a>
         </div>
         <p className="text-xs text-muted-foreground">
           Share this link with candidates to view your careers page

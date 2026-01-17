@@ -200,9 +200,17 @@ export const LivePreview = ({ company }: LivePreviewProps) => {
                 </Card>
               ))}
               {openJobs.length > 3 && (
-                <p className="text-center text-xs text-muted-foreground md:text-sm">
-                  +{openJobs.length - 3} more positions
-                </p>
+                <a 
+                  href={`/${company.slug}/careers`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <Button variant="outline" size="sm" className="w-full gap-2 mt-2">
+                    View All {openJobs.length} Positions
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </a>
               )}
             </div>
           )}

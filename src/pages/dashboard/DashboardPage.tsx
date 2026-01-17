@@ -209,16 +209,17 @@ const DashboardPage = () => {
                           Edit
                         </Button>
                       </Link>
-                      <Link
-                        to={`/${company.slug}/careers`}
+                      <a
+                        href={`/${company.slug}/careers`}
                         target="_blank"
+                        rel="noopener noreferrer"
                         className="flex-1"
                       >
                         <Button variant="outline" className="w-full gap-2">
                           <ExternalLink className="h-4 w-4" />
                           View
                         </Button>
-                      </Link>
+                      </a>
                       <Button
                         variant="ghost"
                         size="icon"

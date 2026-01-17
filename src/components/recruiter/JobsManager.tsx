@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Papa from 'papaparse';
 import { Company, Job } from '@/types';
 import { useJobStore } from '@/store/jobStore';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Briefcase } from 'lucide-react';
+import { Plus, Edit, Trash2, Briefcase, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
 
 const jobSchema = z.object({
   title: z.string().min(1, 'Job title is required'),
@@ -32,10 +33,12 @@ interface JobsManagerProps {
 }
 
 export const JobsManager = ({ company }: JobsManagerProps) => {
-  const { jobs, createJob, updateJob, deleteJob } = useJobStore();
+  const { jobs, createJob, updateJob, deleteJob, importJobs } = useJobStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -121,6 +124,83 @@ export const JobsManager = ({ company }: JobsManagerProps) => {
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const validTypes = [
+      'text/csv',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+    const isValidType = validTypes.includes(file.type) || 
+      file.name.endsWith('.csv') || 
+      file.name.endsWith('.xlsx') || 
+      file.name.endsWith('.xls');
+
+    if (!isValidType) {
+      toast.error('Please upload a CSV or Excel file');
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      // For Excel files, we'd need xlsx library, but papaparse can handle CSV
+      // For now, we'll use papaparse which handles CSV well
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results) => {
+          if (results.errors.length > 0) {
+            console.error('Parse errors:', results.errors);
+            toast.error('Error parsing file. Please check the format.');
+            setIsImporting(false);
+            return;
+          }
+
+          const csvData = results.data as any[];
+          
+          if (csvData.length === 0) {
+            toast.error('No data found in the file');
+            setIsImporting(false);
+            return;
+          }
+
+          // Import jobs
+          const { success, failed } = await importJobs(company.id, csvData);
+
+          if (success > 0) {
+            toast.success(`Successfully imported ${success} jobs${failed > 0 ? ` (${failed} failed)` : ''}`);
+          } else {
+            toast.error('Failed to import any jobs. Please check the file format.');
+          }
+
+          setIsImporting(false);
+        },
+        error: (error) => {
+          console.error('Parse error:', error);
+          toast.error('Error reading file');
+          setIsImporting(false);
+        },
+      });
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Failed to import jobs');
+      setIsImporting(false);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   const jobTypeLabels = {
     'full-time': 'Full-time',
     'part-time': 'Part-time',
@@ -137,10 +217,39 @@ export const JobsManager = ({ company }: JobsManagerProps) => {
             {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} posted
           </p>
         </div>
-        <Button size="sm" className="gap-2" onClick={openCreateDialog}>
-          <Plus className="h-4 w-4" />
-          Add Job
-        </Button>
+        <div className="flex gap-2">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="gap-2" 
+            onClick={triggerFileUpload}
+            disabled={isImporting}
+          >
+            {isImporting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Importing...
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                Import CSV
+              </>
+            )}
+          </Button>
+          <Button size="sm" className="gap-2" onClick={openCreateDialog}>
+            <Plus className="h-4 w-4" />
+            Add Job
+          </Button>
+        </div>
       </div>
 
       {jobs.length === 0 ? (

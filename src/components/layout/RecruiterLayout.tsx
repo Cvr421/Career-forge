@@ -10,21 +10,23 @@ interface RecruiterLayoutProps {
 }
 
 export const RecruiterLayout = ({ children }: RecruiterLayoutProps) => {
-  const { user, isAuthenticated, isLoading, logout, checkAuth } = useAuthStore();
+  const { user, isAuthenticated, isLoading, initialized, logout, checkAuth } = useAuthStore();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (!initialized) {
+      checkAuth();
+    }
+  }, [initialized, checkAuth]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && initialized && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, initialized, isAuthenticated, navigate]);
 
-  if (isLoading) {
+  if (isLoading || !initialized) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <motion.div
@@ -43,8 +45,8 @@ export const RecruiterLayout = ({ children }: RecruiterLayoutProps) => {
     return null;
   }
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 

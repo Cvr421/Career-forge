@@ -10,8 +10,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, MapPin, Search, Briefcase, Clock, ChevronRight, Linkedin, Github, Twitter, Instagram, ExternalLink } from 'lucide-react';
+import { Building2, MapPin, Search, Briefcase, Clock, ChevronRight, ChevronLeft, Linkedin, Github, Twitter, Instagram, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+
+const JOBS_PER_PAGE = 20;
 
 const CareersPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +23,7 @@ const CareersPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (slug) {
@@ -53,6 +56,32 @@ const CareersPage = () => {
       return matchesSearch && matchesLocation && matchesType;
     });
   }, [openJobs, searchQuery, locationFilter, typeFilter]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, locationFilter, typeFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
+  const startIndex = (currentPage - 1) * JOBS_PER_PAGE;
+  const endIndex = startIndex + JOBS_PER_PAGE;
+  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      // Scroll to jobs section
+      document.getElementById('open-positions')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      document.getElementById('open-positions')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const visibleSections = currentCompany?.sections
     .filter((s) => s.visible)
@@ -349,52 +378,98 @@ const CareersPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 md:space-y-4">
-                {filteredJobs.map((job, index) => (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Link to={`/${slug}/careers/${job.slug}`}>
-                      <Card className="group transition-all duration-300 hover:shadow-lg hover:border-primary/30">
-                        <CardContent className="p-4 md:p-6">
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors md:text-lg">
-                                {job.title}
-                              </h3>
-                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground md:mt-2 md:gap-3 md:text-sm">
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                                  {job.location}
-                                </span>
-                                <Badge variant="outline" className="text-[10px] md:text-xs">
-                                  {jobTypeLabels[job.jobType]}
-                                </Badge>
-                                <span className="hidden items-center gap-1 sm:flex">
-                                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                                  {formatDistanceToNow(new Date(job.createdAt), {
-                                    addSuffix: true,
-                                  })}
-                                </span>
+              <>
+                {/* Job count info */}
+                {filteredJobs.length > JOBS_PER_PAGE && (
+                  <div className="mb-4 text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, filteredJobs.length)} of {filteredJobs.length} jobs
+                  </div>
+                )}
+
+                <div className="space-y-3 md:space-y-4">
+                  {paginatedJobs.map((job, index) => (
+                    <motion.div
+                      key={job.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Link to={`/${slug}/careers/${job.slug}`}>
+                        <Card className="group transition-all duration-300 hover:shadow-lg hover:border-primary/30">
+                          <CardContent className="p-4 md:p-6">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors md:text-lg">
+                                  {job.title}
+                                </h3>
+                                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground md:mt-2 md:gap-3 md:text-sm">
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+                                    {job.location}
+                                  </span>
+                                  <Badge variant="outline" className="text-[10px] md:text-xs">
+                                    {jobTypeLabels[job.jobType]}
+                                  </Badge>
+                                  {job.workPolicy && (
+                                    <Badge variant="secondary" className="text-[10px] md:text-xs">
+                                      {job.workPolicy}
+                                    </Badge>
+                                  )}
+                                  {job.salaryRange && (
+                                    <span className="hidden text-green-600 lg:inline">
+                                      {job.salaryRange}
+                                    </span>
+                                  )}
+                                  <span className="hidden items-center gap-1 sm:flex">
+                                    <Clock className="h-3 w-3 md:h-4 md:w-4" />
+                                    {formatDistanceToNow(new Date(job.createdAt), {
+                                      addSuffix: true,
+                                    })}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm" className="gap-1 text-xs h-8 px-3 md:h-9 md:px-4">
+                                  <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
+                                  <span className="hidden sm:inline">Details</span>
+                                </Button>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary md:h-5 md:w-5" />
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm" className="gap-1 text-xs h-8 px-3 md:h-9 md:px-4">
-                                <ExternalLink className="h-3 w-3 md:h-4 md:w-4" />
-                                <span className="hidden sm:inline">Details</span>
-                              </Button>
-                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary md:h-5 md:w-5" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex items-center justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className="gap-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className="gap-2"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </motion.section>
         </div>
