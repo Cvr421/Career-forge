@@ -2,16 +2,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./page/Index"
-
+import LoginPage from "./page/auth/LoginPage";
+import RegisterPage from "./page/auth/RegisterPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
  <BrowserRouter>
- 
-    <Index />
-
+  <Routes>
+<Route path="/" element={<Index />} />
+<Route path="/login" element={<LoginPage />} />
+<Route path="/register" element={<RegisterPage />} />
+  </Routes>
+  
  </BrowserRouter>
    
 
