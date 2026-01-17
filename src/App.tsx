@@ -7,9 +7,15 @@ import Index from "./page/Index"
 const queryClient = new QueryClient();
 
 const App = () => (
-  
-   <Index />
+  <QueryClientProvider client={queryClient}>
+ <BrowserRouter>
+ 
+    <Index />
 
+ </BrowserRouter>
+   
+
+  </QueryClientProvider>
 );
 
 export default App;
