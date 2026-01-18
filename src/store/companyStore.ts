@@ -230,6 +230,38 @@ export const useCompanyStore = create<CompanyState>((set, get) => ({
     }
   },
 
+  deleteCompany: async (id: string) => {
+    set({ isLoading: true });
+    try {
+      // First delete all jobs associated with this company
+      const { error: jobsError } = await supabase
+        .from('jobs')
+        .delete()
+        .eq('company_id', id);
+
+      if (jobsError) throw jobsError;
+
+      // Then delete the company
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local state
+      set({
+        companies: get().companies.filter((c) => c.id !== id),
+        currentCompany: get().currentCompany?.id === id ? null : get().currentCompany,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
   publishCompany: async (id: string) => {
     await get().updateCompany(id, { status: 'published' });
   },

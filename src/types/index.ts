@@ -94,6 +94,7 @@ export interface CompanyState {
   fetchCompany: (slug: string) => Promise<void>;
   createCompany: (data: Partial<Company>) => Promise<Company>;
   updateCompany: (id: string, data: Partial<Company>) => Promise<void>;
+  deleteCompany: (id: string) => Promise<void>;
   publishCompany: (id: string) => Promise<void>;
   unpublishCompany: (id: string) => Promise<void>;
   setCurrentCompany: (company: Company | null) => void;

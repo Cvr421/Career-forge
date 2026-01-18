@@ -10,15 +10,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Edit, ExternalLink, Copy, Briefcase, Building2, Check } from 'lucide-react';
+import { Plus, Edit, ExternalLink, Copy, Briefcase, Building2, Check, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 const DashboardPage = () => {
-  const { companies, isLoading, fetchCompanies, createCompany } = useCompanyStore();
+  const { companies, isLoading, fetchCompanies, createCompany, deleteCompany } = useCompanyStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCompanies();
@@ -45,6 +47,18 @@ const DashboardPage = () => {
     setCopiedSlug(slug);
     toast.success('Link copied to clipboard!');
     setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  const handleDeleteCompany = async (id: string, name: string) => {
+    setDeletingId(id);
+    try {
+      await deleteCompany(id);
+      toast.success(`${name} deleted successfully`);
+    } catch {
+      toast.error('Failed to delete company');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const containerVariants = {
@@ -231,6 +245,35 @@ const DashboardPage = () => {
                           <Copy className="h-4 w-4" />
                         )}
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            disabled={deletingId === company.id}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete {company.name}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete the company and all its jobs. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteCompany(company.id, company.name)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {deletingId === company.id ? 'Deleting...' : 'Delete'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </CardFooter>
                   </Card>
                 </motion.div>

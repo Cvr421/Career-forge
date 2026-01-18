@@ -130,6 +130,28 @@ The app runs on the port defined in `vite.config.ts` (currently `8080`).
 2. Browse open jobs (20 per page)
 3. Click into a job to see the full details
 
+### Security
+
+1. Supabase RLS ensures recruiters only access their own data
+
+2. Public queries are read-only and gated by is_published
+
+3. Passwords are never handled or stored by the app (Supabase Auth only)
+
+4. No sensitive secrets exposed to the client
+
+### Supabase
+
+1. Auth: email/password
+
+2. Database: Postgres
+
+3. Tables: companies, jobs
+
+4. Row Level Security(RLS) for tenant isolation
+
+5. ections stored as JSONB for flexible page composition
+
 ## Project structure (high level)
 
 - `src/pages` Route-level pages (auth, dashboard, editor, public careers pages)
