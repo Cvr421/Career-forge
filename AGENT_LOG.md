@@ -129,6 +129,3 @@ I asked the AI to improve mobile usability by:
 
 ---
 
-## Final Takeaway
-
-AI helped speed up decision-making, uncover bugs faster, and suggest better patterns. However, the final structure, simplifications, UX decisions, and refinements were made deliberately by reviewing AI output and adjusting it to fit the assignment requirements and real-world product expectations.

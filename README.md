@@ -116,8 +116,6 @@ The app runs on the port defined in `vite.config.ts` (currently `8080`).
 
 ### Recruiter flow
 
-A typical recruiter flow looks like this:
-
 1. Register or log in
 2. Create a company from the dashboard
 3. Open the company edit page
@@ -127,8 +125,6 @@ A typical recruiter flow looks like this:
 7. Publish and share the public careers link
 
 ### Candidate flow
-
-From a candidate's perspective:
 
 1. Open a published careers page
 2. Browse open jobs (20 per page)
