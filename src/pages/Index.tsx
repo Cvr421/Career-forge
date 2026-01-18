@@ -371,6 +371,7 @@ const Index = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
+                className="relative z-10"
               >
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/25">
                   <Users className="h-8 w-8 text-primary-foreground" />
@@ -381,14 +382,16 @@ const Index = () => {
                 <p className="mx-auto mb-8 max-w-md text-muted-foreground">
                   Join thousands of recruiters building amazing careers pages with CareerForge.
                 </p>
-                <Link to="/register">
-                  <Button 
-                    size="lg" 
-                    className="gap-2 px-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-xl shadow-primary/30"
-                  >
+                
+                <Button 
+                  size="lg" 
+                  className="gap-2 px-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-xl shadow-primary/30"
+                  asChild
+                >
+                  <Link to="/register">
                     Get Started Free <ArrowRight className="h-5 w-5" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </motion.div>
             </div>
             
@@ -415,7 +418,7 @@ const Index = () => {
               <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
             </div>
             <div className="text-sm text-muted-foreground">
-              © 2024 CareerForge. All rights reserved.
+              © {new Date().getFullYear()} CareerForge. All rights reserved.
             </div>
           </div>
         </div>
